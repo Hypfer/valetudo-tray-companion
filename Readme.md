@@ -1,4 +1,4 @@
-﻿# Valetudo Tray Companion (Windows)
+# Valetudo Tray Companion (Windows)
 
 ![image](https://user-images.githubusercontent.com/974410/156892054-01d113e8-17e3-4a6f-b931-3eb2b54756d4.png)
 
