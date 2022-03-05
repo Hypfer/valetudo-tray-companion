@@ -6,15 +6,17 @@ public class AutostartManager
 {
     private const string ApplicationName = "ValetudoTrayCompanion";
     private readonly RegistryKey? _autostartRegistryKey;
+    private readonly string? _binaryLocation;
     
     public AutostartManager()
     {
         _autostartRegistryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+        _binaryLocation = Environment.ProcessPath;
     }
 
     public bool IsReady()
     {
-        return _autostartRegistryKey != null;
+        return _autostartRegistryKey != null && _binaryLocation != null;
     }
 
     public bool IsAutostartEnabled()
@@ -33,7 +35,7 @@ public class AutostartManager
     {
         if (IsReady())
         {
-            _autostartRegistryKey!.SetValue(ApplicationName, System.Reflection.Assembly.GetExecutingAssembly().Location);
+            _autostartRegistryKey!.SetValue(ApplicationName, _binaryLocation!);
         }
     }
 
