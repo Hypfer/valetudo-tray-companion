@@ -9,7 +9,7 @@ Discovery is done via the Bonjour/mDNS broadcasts of Valetudo.
 
 ## Installation
 
-Currently, there's no installation procedure.
+Currently, there's no installation procedure.<br/>
 Simply download the latest binary from the releases section and execute it.
 
 This application depends on the .NET 6.0 Runtime, which can be downloaded [here](https://dotnet.microsoft.com/en-us/download).
