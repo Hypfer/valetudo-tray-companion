@@ -6,16 +6,20 @@ namespace valetudo_tray_companion;
 
 public class MainApplicationContext : ApplicationContext
 {
-    private NotifyIcon Icon { get; set; }
+    private readonly NotifyIcon _icon;
+    private readonly List<ToolStripItem> _utilityToolStripItems;
+    private readonly CancellationTokenSource _cts;
+    private readonly AutostartManager _autostartManager;
     private List<DiscoveredValetudoInstance> _discoveredInstances;
-    private CancellationTokenSource Cts { get; set; }
     
     public MainApplicationContext()
     {
-        Icon = new NotifyIcon();
+        _icon = new NotifyIcon();
+        _utilityToolStripItems = new List<ToolStripItem>();
+        _cts = new CancellationTokenSource();
+        _autostartManager = new AutostartManager();
         _discoveredInstances = new List<DiscoveredValetudoInstance>();
-        Cts = new CancellationTokenSource();
-        
+
         InitIcon();
         UpdateIconState();
         StartDiscoveryLoop();
@@ -25,14 +29,47 @@ public class MainApplicationContext : ApplicationContext
     {
         var exe = System.Reflection.Assembly.GetExecutingAssembly();
         var iconStream = exe.GetManifestResourceStream("valetudo_tray_companion.res.logo.ico");
-        Icon.Icon = iconStream != null ? new Icon(iconStream) : new Icon(SystemIcons.Application, 40, 40);
+        _icon.Icon = iconStream != null ? new Icon(iconStream) : new Icon(SystemIcons.Application, 40, 40);
+        _icon.Visible = true;
+        
+        
+        _utilityToolStripItems.Add(new ToolStripSeparator());
+        
+        if (_autostartManager.IsReady())
+        {
+            var autoStartItem = new ToolStripMenuItem("Run on startup");
+            autoStartItem.Checked = _autostartManager.IsAutostartEnabled();
 
-        Icon.Visible = true;
+            autoStartItem.Click += (_, _) =>
+            {
+                if (_autostartManager.IsAutostartEnabled())
+                {
+                    _autostartManager.DisableAutostart();
+                }
+                else
+                {
+                    _autostartManager.EnableAutostart();
+                }
+                
+                autoStartItem.Checked = _autostartManager.IsAutostartEnabled();
+            };
+        
+            _utilityToolStripItems.Add(autoStartItem);
+        }
+        
+        var closeItem = new ToolStripMenuItem("Exit");
+        closeItem.Click += (_, _) =>
+        {
+            _cts.Cancel();
+            Application.Exit();
+        };
+
+        _utilityToolStripItems.Add(closeItem);
     }
 
     private void UpdateIconState()
     {
-        Icon.Text = _discoveredInstances.Count switch
+        _icon.Text = _discoveredInstances.Count switch
         {
             > 1 => _discoveredInstances.Count + " instances discovered",
             > 0 => _discoveredInstances.Count + " instance discovered",
@@ -41,7 +78,7 @@ public class MainApplicationContext : ApplicationContext
 
         var ctxMenu = new ContextMenuStrip();
 
-        Icon.ContextMenuStrip = ctxMenu;
+        _icon.ContextMenuStrip = ctxMenu;
 
         foreach (var discoveredValetudoInstance in _discoveredInstances)
         {
@@ -53,16 +90,11 @@ public class MainApplicationContext : ApplicationContext
             };
         }
 
-        ctxMenu.Items.Add(new ToolStripSeparator());
-        var closeItem = ctxMenu.Items.Add("Exit");
-
-        closeItem.Click += (_, _) =>
+        foreach (var utilityToolStripItem in _utilityToolStripItems)
         {
-            Cts.Cancel();
-            Application.Exit();
-        };
+            ctxMenu.Items.Add(utilityToolStripItem);
+        }
     }
-
 
 
     private async void StartDiscoveryLoop()
@@ -72,7 +104,7 @@ public class MainApplicationContext : ApplicationContext
         try
         {
             await DiscoverInstances();
-            while (await timer.WaitForNextTickAsync(Cts.Token))
+            while (await timer.WaitForNextTickAsync(_cts.Token))
             {
                 var now = DateTime.Now;
                 _discoveredInstances = _discoveredInstances.Where(x => (now - x.LastSeen).TotalMinutes <= 5).ToList();
@@ -87,7 +119,7 @@ public class MainApplicationContext : ApplicationContext
 
     private async Task DiscoverInstances()
     {
-        IReadOnlyList<IZeroconfHost> results = await ZeroconfResolver.ResolveAsync("_valetudo._tcp.local.", cancellationToken: Cts.Token);
+        IReadOnlyList<IZeroconfHost> results = await ZeroconfResolver.ResolveAsync("_valetudo._tcp.local.", cancellationToken: _cts.Token);
 
         foreach (var zeroconfHost in results)
         {
@@ -133,8 +165,8 @@ public class MainApplicationContext : ApplicationContext
 
         UpdateIconState();
     }
-    
-    
+
+
     // adapted from https://stackoverflow.com/a/43232486
     private static void OpenUrl(string url)
     {
