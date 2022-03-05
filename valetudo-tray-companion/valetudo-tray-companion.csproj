@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net6.0-windows</TargetFramework>
+        <RootNamespace>valetudo_tray_companion</RootNamespace>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <ApplicationIcon>res\logo.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Zeroconf" Version="3.6.11" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="logo.ico" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="res\logo.ico" />
+    </ItemGroup>
+
+</Project>
