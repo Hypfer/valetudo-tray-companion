@@ -8,6 +8,7 @@
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
         <ApplicationIcon>res\logo.ico</ApplicationIcon>
+        <AssemblyVersion>2021.03.0</AssemblyVersion>
     </PropertyGroup>
 
     <ItemGroup>
