@@ -1,0 +1,37 @@
+﻿{
+  'name': 'Release',
+  'on': { 'release': { 'types': ['published'] } },
+  'jobs':
+    {
+      'publish-release':
+        {
+          'runs-on': 'windows-latest',
+          'steps':
+            [
+              { 'uses': 'actions/checkout@v2' },
+              {
+                'name': 'Use .NET Core',
+                'uses': 'actions/setup-dotnet@v1',
+                'with': { 'dotnet-version': '6.0' },
+              },
+              { 
+                'name': 'Publish',
+                'run': 'dotnet publish -r win-x64 -p:PublishSingleFile=true --configuration Release -p:DebugType=embedded -p:PublishTrimmed=false --no-self-contained -o build/' 
+              },
+              
+              {
+                'name': 'Upload build',
+                'uses': 'actions/upload-release-asset@v1.0.2',
+                'env': { 'GITHUB_TOKEN': '${{ secrets.GITHUB_TOKEN }}' },
+                'with':
+                  {
+                    'upload_url': '${{ github.event.release.upload_url }}',
+                    'asset_path': './build/valetudo-tray-companion.exe',
+                    'asset_name': 'valetudo-tray-companion.exe',
+                    'asset_content_type': 'binary/octet-stream',
+                  },
+              },
+            ],
+        },
+    },
+}
