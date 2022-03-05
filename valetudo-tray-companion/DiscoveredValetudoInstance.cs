@@ -9,10 +9,10 @@ public class DiscoveredValetudoInstance
 
     public DiscoveredValetudoInstance(string id, string friendlyName, string address)
     {
-        this.Id = id;
-        this.FriendlyName = friendlyName;
-        this.Address = address;
+        Id = id;
+        FriendlyName = friendlyName;
+        Address = address;
 
-        this.LastSeen = DateTime.Now;
+        LastSeen = DateTime.Now;
     }
 }
