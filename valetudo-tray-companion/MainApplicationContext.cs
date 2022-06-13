@@ -123,9 +123,6 @@ public class MainApplicationContext : ApplicationContext
 
         foreach (var zeroconfHost in results)
         {
-            Console.WriteLine(zeroconfHost.Id);
-            
-
             if (zeroconfHost.Services.Count > 0)
             {
                 var service = zeroconfHost.Services.FirstOrDefault().Value;
@@ -139,7 +136,7 @@ public class MainApplicationContext : ApplicationContext
                     }
                 }
 
-                if (props.ContainsKey("id"))
+                if (props.ContainsKey("id") && props.ContainsKey("manufacturer") && props.ContainsKey("model"))
                 {
                     var existingInstance = _discoveredInstances.FirstOrDefault(x => x.Id == props["id"]);
                     if (existingInstance == null)
@@ -147,7 +144,7 @@ public class MainApplicationContext : ApplicationContext
                         _discoveredInstances.Add(
                             new DiscoveredValetudoInstance(
                                 props["id"],
-                                zeroconfHost.DisplayName + " (" + props["id"] + ")",
+                                $"{props["manufacturer"]} {props["model"]} ({props["id"]})",
                                 zeroconfHost.IPAddress
                             )
                         );
