@@ -1,6 +1,6 @@
 ﻿namespace valetudo_tray_companion;
 
-public class DiscoveredValetudoInstance
+public sealed class DiscoveredValetudoInstance
 {
     public readonly string Id;
     public readonly string FriendlyName;
@@ -12,7 +12,6 @@ public class DiscoveredValetudoInstance
         Id = id;
         FriendlyName = friendlyName;
         Address = address;
-
         LastSeen = DateTime.Now;
     }
 }

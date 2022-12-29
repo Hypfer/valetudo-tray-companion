@@ -1,49 +1,27 @@
-﻿using Microsoft.Win32;
+﻿using System.Runtime.InteropServices;
+using valetudo_tray_companion.AutostartProvider;
 
 namespace valetudo_tray_companion;
 
-public class AutostartManager
+public sealed class AutostartManager
 {
-    private const string ApplicationName = "ValetudoTrayCompanion";
-    private readonly RegistryKey? _autostartRegistryKey;
-    private readonly string? _binaryLocation;
-    
+    private readonly IAutostartProvider _autostartProvider;
+
     public AutostartManager()
     {
-        _autostartRegistryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
-        _binaryLocation = Environment.ProcessPath;
-    }
-
-    public bool IsReady()
-    {
-        return _autostartRegistryKey != null && _binaryLocation != null;
-    }
-
-    public bool IsAutostartEnabled()
-    {
-        if (IsReady())
-        {
-            return _autostartRegistryKey!.GetValue(ApplicationName) != null;
-        }
+        if (OperatingSystem.IsWindows())
+            _autostartProvider = new WindowsAutostartProvider();
+        else if (OperatingSystem.IsLinux())
+            _autostartProvider = new LinuxAutostartProvider();
+        else if (OperatingSystem.IsMacOS())
+            _autostartProvider = new MacosAutostartProvider();
         else
-        {
-            return false;
-        }
+            throw new PlatformNotSupportedException(RuntimeInformation.OSDescription);
     }
-
-    public void EnableAutostart()
-    {
-        if (IsReady())
-        {
-            _autostartRegistryKey!.SetValue(ApplicationName, _binaryLocation!);
-        }
-    }
-
-    public void DisableAutostart()
-    {
-        if (IsReady())
-        {
-            _autostartRegistryKey!.DeleteValue(ApplicationName, false);
-        }
-    }
+    
+    public bool IsSupported => _autostartProvider.IsSupported;
+    public bool IsReady => _autostartProvider.IsReady;
+    public bool IsAutostartEnabled => _autostartProvider.IsAutostartEnabled;
+    public void EnableAutostart() => _autostartProvider.EnableAutostart();
+    public void DisableAutostart() => _autostartProvider.DisableAutostart();
 }
