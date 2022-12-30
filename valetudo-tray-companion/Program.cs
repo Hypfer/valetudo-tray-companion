@@ -1,16 +1,39 @@
+﻿using Avalonia;
+using System.Diagnostics;
+using Avalonia.Logging;
+
 namespace valetudo_tray_companion;
 
-static class Program
+class Program
 {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
+    // Initialization code. Don't use any Avalonia, third-party APIs or any
+    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+    // yet and stuff might break.
     [STAThread]
-    static void Main()
+    public static void Main(string[] args)
     {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
-        ApplicationConfiguration.Initialize();
-        Application.Run(new MainApplicationContext());
+        // Add console log output for simple debugging purposes.
+        // The `OutputType` property in the .csproj file has to be changed from `WinExe` to `Exe` for the console to be visible.
+        var listener = new ConsoleTraceListener();
+        Trace.Listeners.Add(listener);
+        
+        try
+        {
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception e)
+        {
+            Trace.TraceError("{0:HH:mm:ss.fff} Exception {1}", DateTime.Now, e);
+        }
+        finally
+        {
+            Trace.Flush();
+        }
     }
+
+    // Avalonia configuration, don't remove; also used by visual designer.
+    public static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .LogToTrace();
 }

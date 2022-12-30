@@ -1,26 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyVersion>2022.12.0</AssemblyVersion>
+    <ApplicationIcon>res\logo.ico</ApplicationIcon>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <OutputType>WinExe</OutputType>
-        <TargetFramework>net6.0-windows</TargetFramework>
-        <RootNamespace>valetudo_tray_companion</RootNamespace>
-        <Nullable>enable</Nullable>
-        <UseWindowsForms>true</UseWindowsForms>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <ApplicationIcon>res\logo.ico</ApplicationIcon>
-        <AssemblyVersion>2022.06.0</AssemblyVersion>
-    </PropertyGroup>
+  <ItemGroup>
+    <TrimmerRootDescriptor Include="Roots.xml" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Zeroconf" Version="3.6.11" />
-    </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="res\**" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <None Remove="logo.ico" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="res\logo.ico" />
-    </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="Zeroconf" Version="3.6.11" />
+    <PackageReference Include="Avalonia" Version="11.0.0-preview4" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.0.0-preview4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.0-preview4" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0-preview4" />
+    <PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" />
+  </ItemGroup>
 </Project>
