@@ -12,8 +12,11 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // Add console log output for simple debugging purposes.
+        // The `OutputType` property in the .csproj file has to be changed from `WinExe` to `Exe` for the console to be visible.
         var listener = new ConsoleTraceListener();
         Trace.Listeners.Add(listener);
+        
         try
         {
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
