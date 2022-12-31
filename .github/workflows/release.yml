@@ -15,21 +15,37 @@
                 'with': { 'dotnet-version': '7.0' },
               },
               { 
-                'name': 'Publish',
-                'run': 'dotnet publish -r win-x64 -p:PublishSingleFile=true -p:PublishTrimmed=true -p:IncludeNativeLibrariesForSelfExtract=true --self-contained true --configuration Release -p:DebugType=embedded -o build/' 
+                'name': 'Publish Win',
+                'run': 'dotnet publish -r win-x64 -p:PublishSingleFile=true -p:PublishTrimmed=true -p:IncludeNativeLibrariesForSelfExtract=true --self-contained true --configuration Release -p:DebugType=embedded -o build_win/' 
+              },
+              {
+                'name': 'Publish Lin amd64',
+                'run': 'dotnet publish -r linux-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --self-contained true --configuration Release -p:DebugType=embedded -o build_lin_amd64/'
               },
               
               {
-                'name': 'Upload build',
+                'name': 'Upload win build',
                 'uses': 'actions/upload-release-asset@v1.0.2',
                 'env': { 'GITHUB_TOKEN': '${{ secrets.GITHUB_TOKEN }}' },
                 'with':
                   {
                     'upload_url': '${{ github.event.release.upload_url }}',
-                    'asset_path': './build/valetudo-tray-companion.exe',
+                    'asset_path': './build_win/valetudo-tray-companion.exe',
                     'asset_name': 'valetudo-tray-companion.exe',
                     'asset_content_type': 'binary/octet-stream',
                   },
+              },
+              {
+                'name': 'Upload lin amd64 build',
+                'uses': 'actions/upload-release-asset@v1.0.2',
+                'env': { 'GITHUB_TOKEN': '${{ secrets.GITHUB_TOKEN }}' },
+                'with':
+                {
+                  'upload_url': '${{ github.event.release.upload_url }}',
+                  'asset_path': './build_lin_amd64/valetudo-tray-companion',
+                  'asset_name': 'valetudo-tray-companion-amd64',
+                  'asset_content_type': 'binary/octet-stream',
+                }
               },
             ],
         },
