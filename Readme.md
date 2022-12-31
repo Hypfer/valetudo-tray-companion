@@ -10,5 +10,5 @@ Discovery is done via the Bonjour/mDNS broadcasts of Valetudo.
 ## Installation
 
 Simply download the latest binary from the releases section and execute it.<br/>
-If you want to "install" it for permanent use, just copy the exe to a persistent location such as your `%USERPROFILE%` and select the "Run on startup" menu option.
+If you want to "install" it for permanent use, just copy the executable to a persistent location such as your `%USERPROFILE%` on windows or `~` on linux and select the "Run on startup" menu option.
 
