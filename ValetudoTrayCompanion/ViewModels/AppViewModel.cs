@@ -39,9 +39,13 @@ public partial class AppViewModel
         
         if (_autostartManager is { IsSupported: true, IsReady: true })
         {
-            var autoStartItem = new NativeMenuItem();
-            autoStartItem.IsChecked = _autostartManager.IsAutostartEnabled;
-            SetAutostartMenuItemHeader(autoStartItem);
+            var autoStartItem = new NativeMenuItem
+            {
+                Header = "Run on startup",
+                ToggleType = NativeMenuItemToggleType.CheckBox,
+                IsChecked = _autostartManager.IsAutostartEnabled
+            };
+            
             autoStartItem.Click += (_, _) =>
             {
                 if (_autostartManager.IsAutostartEnabled)
@@ -54,7 +58,6 @@ public partial class AppViewModel
                 }
                 
                 autoStartItem.IsChecked = _autostartManager.IsAutostartEnabled;
-                SetAutostartMenuItemHeader(autoStartItem);
             };
             
             _controlItems.Add(autoStartItem);
@@ -70,14 +73,6 @@ public partial class AppViewModel
         _controlItems.Add(closeItem);
      }
     
-    /// <summary>
-    /// <see cref="NativeMenuItem.IsChecked"/> is currently not implemented, just use unicode ballot box for now.
-    /// https://github.com/AvaloniaUI/Avalonia/issues/7880
-    /// </summary>
-    private static void SetAutostartMenuItemHeader(NativeMenuItem autoStartItem)
-    {
-        autoStartItem.Header = autoStartItem.IsChecked ? "☑ Run on startup" : "☐ Run on startup";
-    }
     
     private void UpdateIconState()
     {
