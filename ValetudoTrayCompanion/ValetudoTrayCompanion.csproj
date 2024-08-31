@@ -7,6 +7,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets/logo.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <InvariantGlobalization>true</InvariantGlobalization>
 
     <Product>Valetudo Tray Companion</Product>
     <Description>Valetudo Tray Companion offers a tray icon, which on right-click provides you with a list of Valetudo instances on your network.</Description>
@@ -16,6 +17,17 @@
     <PackageProjectUrl>https://valetudo.cloud/pages/companion_apps/valetudo_tray_companion.html</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Hypfer/valetudo-tray-companion.git</RepositoryUrl>
     <RepositoryType>Public</RepositoryType>
+  </PropertyGroup>
+
+  <!-- https://www.nikouusitalo.com/blog/net-deployment-models-and-features-with-examples/ -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
+    <DebugType>embedded</DebugType>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
