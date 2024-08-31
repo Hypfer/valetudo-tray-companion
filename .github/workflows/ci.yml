@@ -30,7 +30,7 @@
                 'with':
                   {
                     'name': 'valetudo-tray-companion',
-                    'path': 'build_win/ValetudoTrayCompanion.exe',
+                    'path': 'build_win/valetudo-tray-companion.exe',
                   },
               },
               {
@@ -39,7 +39,7 @@
                 'with':
                   {
                     'name': 'valetudo-tray-companion-amd64',
-                    'path': 'build_lin_amd64/ValetudoTrayCompanion',
+                    'path': 'build_lin_amd64/valetudo-tray-companion',
                   },
               },
             ],

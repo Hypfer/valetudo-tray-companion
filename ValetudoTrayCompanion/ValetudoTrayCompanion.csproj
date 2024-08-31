@@ -7,6 +7,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets/logo.ico</ApplicationIcon>
     <AssemblyVersion>2024.08.0</AssemblyVersion>
+    <AssemblyName>valetudo-tray-companion</AssemblyName>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <InvariantGlobalization>true</InvariantGlobalization>
 
