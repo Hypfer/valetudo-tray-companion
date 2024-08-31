@@ -2,10 +2,18 @@ using System;
 
 namespace ValetudoTrayCompanion.Models;
 
-public sealed record DiscoveredValetudoInstance
+public sealed class DiscoveredValetudoInstance
 {
-    public required string Id { get; init; }
-    public required string FriendlyName { get; init; }
-    public required string Address { get; init; }
-    public DateTime LastSeen { get; set; } = DateTime.Now;
+    public readonly string Id;
+    public readonly string FriendlyName;
+    public readonly string Address;
+    public DateTime LastSeen;
+
+    public DiscoveredValetudoInstance(string id, string friendlyName, string address)
+    {
+        Id = id;
+        FriendlyName = friendlyName;
+        Address = address;
+        LastSeen = DateTime.Now;
+    }
 }

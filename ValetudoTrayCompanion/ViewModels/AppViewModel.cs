@@ -1,34 +1,116 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using Avalonia.Platform;
 using ValetudoTrayCompanion.Models;
 using Zeroconf;
 
 namespace ValetudoTrayCompanion.ViewModels;
 
-public partial class AppViewModel : ObservableObject
+public partial class AppViewModel
 {
-    private readonly IClassicDesktopStyleApplicationLifetime _desktop;
+    private readonly IClassicDesktopStyleApplicationLifetime _desktopLifetime;
+    private readonly TrayIcon _icon = new();
+    private readonly List<NativeMenuItemBase> _controlItems = new();
     private readonly CancellationTokenSource _cts = new();
+    private readonly AutostartManager _autostartManager = new();
+    private List<DiscoveredValetudoInstance> _discoveredInstances = new();
 
-    public AppViewModel(IClassicDesktopStyleApplicationLifetime desktop)
+    public AppViewModel(IClassicDesktopStyleApplicationLifetime desktopLifetime)
     {
-        _desktop = desktop;
-        ToolTipText = Constants.DiscoveringInstances;
+        _desktopLifetime = desktopLifetime;
+        InitIcon();
+        UpdateIconState();
         StartDiscoveryLoop();
     }
 
-    [ObservableProperty]
-    private string _toolTipText;
+     private void InitIcon()
+     {
+         using var valetudoLogoStream = AssetLoader.Open(new Uri("resm:ValetudoTrayCompanion.Assets.logo.ico"));
+        _icon.Icon = new WindowIcon(valetudoLogoStream);
+        _icon.IsVisible = true;
+        _icon.Menu = new NativeMenu();
+        
+        if (_autostartManager is { IsSupported: true, IsReady: true })
+        {
+            var autoStartItem = new NativeMenuItem();
+            autoStartItem.IsChecked = _autostartManager.IsAutostartEnabled;
+            SetAutostartMenuItemHeader(autoStartItem);
+            autoStartItem.Click += (_, _) =>
+            {
+                if (_autostartManager.IsAutostartEnabled)
+                {
+                    _autostartManager.DisableAutostart();
+                }
+                else
+                {
+                    _autostartManager.EnableAutostart();
+                }
+                
+                autoStartItem.IsChecked = _autostartManager.IsAutostartEnabled;
+                SetAutostartMenuItemHeader(autoStartItem);
+            };
+            
+            _controlItems.Add(autoStartItem);
+        }
+        
+        var closeItem = new NativeMenuItem("Exit");
+        closeItem.Click += (_, _) =>
+        {
+            _cts.Cancel();
+            _desktopLifetime.Shutdown();
+        };
+        
+        _controlItems.Add(closeItem);
+     }
     
-    [ObservableProperty]
-    private ObservableCollection<DiscoveredValetudoInstance> _discoveredInstances = new();
+    /// <summary>
+    /// <see cref="NativeMenuItem.IsChecked"/> is currently not implemented, just use unicode ballot box for now.
+    /// https://github.com/AvaloniaUI/Avalonia/issues/7880
+    /// </summary>
+    private static void SetAutostartMenuItemHeader(NativeMenuItem autoStartItem)
+    {
+        autoStartItem.Header = autoStartItem.IsChecked ? "☑ Run on startup" : "☐ Run on startup";
+    }
+    
+    private void UpdateIconState()
+    {
+        _icon.ToolTipText = _discoveredInstances.Count switch
+        {
+            > 1 => $"{_discoveredInstances.Count} instances discovered",
+            > 0 => $"{_discoveredInstances.Count} instance discovered",
+            _ => "Discovering instances..."
+        };
+        
+        _icon.Menu!.Items.Clear();
+        
+        foreach (var discoveredValetudoInstance in _discoveredInstances)
+        {
+            var item = new NativeMenuItem(discoveredValetudoInstance.FriendlyName);
+            _icon.Menu!.Items.Add(item);
+
+            item.Click += (_, _) =>
+            {
+                OpenUrl("http://" + discoveredValetudoInstance.Address);
+            };
+        }
+
+        if (_discoveredInstances.Count > 0)
+        {
+            _icon.Menu.Items.Add(new NativeMenuItemSeparator());
+        }
+        
+        foreach (var controlItem in _controlItems)
+        {
+            _icon.Menu.Items.Add(controlItem);
+        }
+    }
     
     private async void StartDiscoveryLoop()
     {
@@ -39,12 +121,8 @@ public partial class AppViewModel : ObservableObject
             while (await timer.WaitForNextTickAsync(_cts.Token))
             {
                 var now = DateTime.Now;
-                var oldInstances = DiscoveredInstances.Where(x => (now - x.LastSeen).TotalMinutes <= 5);
-                foreach (var oldInstance in oldInstances)
-                {
-                    DiscoveredInstances.Remove(oldInstance);
-                }
-                
+                _discoveredInstances = _discoveredInstances.Where(x => (now - x.LastSeen).TotalMinutes <= 5).ToList();
+            
                 await DiscoverInstances();
             }
         } catch (OperationCanceledException)
@@ -56,6 +134,7 @@ public partial class AppViewModel : ObservableObject
     private async Task DiscoverInstances()
     {
         IReadOnlyList<IZeroconfHost> results = await ZeroconfResolver.ResolveAsync("_valetudo._tcp.local.", cancellationToken: _cts.Token);
+        
         foreach (var zeroconfHost in results)
         {
             if (zeroconfHost.Services.Count <= 0) 
@@ -74,15 +153,15 @@ public partial class AppViewModel : ObservableObject
             
             if (props.ContainsKey("id") && props.ContainsKey("manufacturer") && props.ContainsKey("model"))
             {
-                var existingInstance = DiscoveredInstances.FirstOrDefault(x => x.Id == props["id"]);
+                var existingInstance = _discoveredInstances.FirstOrDefault(x => x.Id == props["id"]);
                 if (existingInstance == null)
                 {
-                    DiscoveredInstances.Add(new DiscoveredValetudoInstance
-                        {
-                            Id = props["id"],
-                            FriendlyName = $"{props["manufacturer"]} {props["model"]} ({props["id"]})",
-                            Address = zeroconfHost.IPAddress
-                        }
+                    _discoveredInstances.Add(
+                        new DiscoveredValetudoInstance(
+                            props["id"],
+                            $"{props["manufacturer"]} {props["model"]} ({props["id"]})",
+                            zeroconfHost.IPAddress
+                        )
                     );
                 }
                 else
@@ -92,18 +171,22 @@ public partial class AppViewModel : ObservableObject
             }
         }
         
-        ToolTipText = DiscoveredInstances.Count switch
-        {
-            > 1 => string.Format(Constants.MultipleInstanceDiscovered, DiscoveredInstances.Count),
-            > 0 => string.Format(Constants.SingleInstanceDiscovered, DiscoveredInstances.Count),
-            _ => Constants.DiscoveringInstances
-        };
+        _discoveredInstances = _discoveredInstances.OrderBy(x => x.Id).ToList();
+        UpdateIconState();
     }
     
-    [RelayCommand]
-    private void Exit()
+    // adapted from https://stackoverflow.com/a/43232486
+    private static void OpenUrl(string url)
     {
-        _cts.Cancel();
-        _desktop.Shutdown();
+        url = url.Replace("&", "^&");
+        // hack because of this: https://github.com/dotnet/corefx/issues/10361
+        if (OperatingSystem.IsWindows())
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        else if (OperatingSystem.IsLinux())
+            Process.Start("xdg-open", url);
+        else if (OperatingSystem.IsMacOS())
+            Process.Start("open", url);
+        else
+            throw new PlatformNotSupportedException(RuntimeInformation.OSDescription);
     }
 }
