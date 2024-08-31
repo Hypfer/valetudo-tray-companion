@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/logo.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+
+    <Product>Valetudo Tray Companion</Product>
+    <Description>Valetudo Tray Companion offers a tray icon, which on right-click provides you with a list of Valetudo instances on your network.</Description>
+    <Company>Valetudo</Company>
+    <Copyright>Copyright © 2024 Valetudo.</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://valetudo.cloud/pages/companion_apps/valetudo_tray_companion.html</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Hypfer/valetudo-tray-companion.git</RepositoryUrl>
+    <RepositoryType>Public</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.0.13" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.0.13" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.13" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.13" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+  </ItemGroup>
+</Project>
