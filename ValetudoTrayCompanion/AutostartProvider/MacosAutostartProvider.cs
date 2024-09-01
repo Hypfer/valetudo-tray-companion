@@ -1,6 +1,7 @@
-﻿using System.Runtime.Versioning;
+using System;
+using System.Runtime.Versioning;
 
-namespace valetudo_tray_companion.AutostartProvider;
+namespace ValetudoTrayCompanion.AutostartProvider;
 
 /// <summary>
 /// TODO: Implement

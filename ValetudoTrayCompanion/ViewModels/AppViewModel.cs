@@ -1,55 +1,51 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
-using Avalonia;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using ValetudoTrayCompanion.Models;
 using Zeroconf;
 
-namespace valetudo_tray_companion;
+namespace ValetudoTrayCompanion.ViewModels;
 
-public partial class App : Application
+public partial class AppViewModel
 {
-    private TrayIcon _icon = null!;
-    private readonly List<NativeMenuItemBase> _utilityToolStripItems = new();
+    private readonly IClassicDesktopStyleApplicationLifetime _desktopLifetime;
+    private readonly TrayIcon _icon = new();
+    private readonly List<NativeMenuItemBase> _controlItems = new();
     private readonly CancellationTokenSource _cts = new();
     private readonly AutostartManager _autostartManager = new();
     private List<DiscoveredValetudoInstance> _discoveredInstances = new();
-    
-    public override void Initialize()
+
+    public AppViewModel(IClassicDesktopStyleApplicationLifetime desktopLifetime)
     {
-        AvaloniaXamlLoader.Load(this);
+        _desktopLifetime = desktopLifetime;
         InitIcon();
         UpdateIconState();
         StartDiscoveryLoop();
     }
 
-    public override void OnFrameworkInitializationCompleted()
-    {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.MainWindow = new MainWindow();
-        }
-        
-        base.OnFrameworkInitializationCompleted();
-    }
-    
-    private void InitIcon()
-    {
-        var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-        using var valetudoLogoStream = assets!.Open(new Uri("resm:valetudo-tray-companion.res.logo.ico"));
-        _icon = new TrayIcon();
+     private void InitIcon()
+     {
+         using var valetudoLogoStream = AssetLoader.Open(new Uri("resm:ValetudoTrayCompanion.Assets.logo.ico"));
         _icon.Icon = new WindowIcon(valetudoLogoStream);
         _icon.IsVisible = true;
-        _utilityToolStripItems.Add(new NativeMenuItemSeparator());
+        _icon.Menu = new NativeMenu();
         
         if (_autostartManager is { IsSupported: true, IsReady: true })
         {
-            var autoStartItem = new NativeMenuItem();
-            autoStartItem.IsChecked = _autostartManager.IsAutostartEnabled;
-            SetAutostartMenuItemHeader(autoStartItem);
-
+            var autoStartItem = new NativeMenuItem
+            {
+                Header = "Run on startup",
+                ToggleType = NativeMenuItemToggleType.CheckBox,
+                IsChecked = _autostartManager.IsAutostartEnabled
+            };
+            
             autoStartItem.Click += (_, _) =>
             {
                 if (_autostartManager.IsAutostartEnabled)
@@ -62,31 +58,21 @@ public partial class App : Application
                 }
                 
                 autoStartItem.IsChecked = _autostartManager.IsAutostartEnabled;
-                SetAutostartMenuItemHeader(autoStartItem);
             };
-        
-            _utilityToolStripItems.Add(autoStartItem);
+            
+            _controlItems.Add(autoStartItem);
         }
         
         var closeItem = new NativeMenuItem("Exit");
         closeItem.Click += (_, _) =>
         {
             _cts.Cancel();
-            if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime) 
-                lifetime.Shutdown();
+            _desktopLifetime.Shutdown();
         };
         
-        _utilityToolStripItems.Add(closeItem);
-    }
+        _controlItems.Add(closeItem);
+     }
     
-    /// <summary>
-    /// <see cref="NativeMenuItem.IsChecked"/> is currently not implemented, just use unicode ballot box for now.
-    /// https://github.com/AvaloniaUI/Avalonia/issues/7880
-    /// </summary>
-    private static void SetAutostartMenuItemHeader(NativeMenuItem autoStartItem)
-    {
-        autoStartItem.Header = autoStartItem.IsChecked ? "☑ Run on startup" : "☐ Run on startup";
-    }
     
     private void UpdateIconState()
     {
@@ -97,24 +83,27 @@ public partial class App : Application
             _ => "Discovering instances..."
         };
         
-        var ctxMenu = new NativeMenu();
-        _icon.Menu = ctxMenu;
+        _icon.Menu!.Items.Clear();
         
         foreach (var discoveredValetudoInstance in _discoveredInstances)
         {
             var item = new NativeMenuItem(discoveredValetudoInstance.FriendlyName);
-            ctxMenu.Items.Add(item);
+            _icon.Menu!.Items.Add(item);
 
             item.Click += (_, _) =>
             {
                 OpenUrl("http://" + discoveredValetudoInstance.Address);
             };
         }
-        
-        foreach (var utilityToolStripItem in _utilityToolStripItems)
+
+        if (_discoveredInstances.Count > 0)
         {
-            utilityToolStripItem.Parent = null;
-            ctxMenu.Items.Add(utilityToolStripItem);
+            _icon.Menu.Items.Add(new NativeMenuItemSeparator());
+        }
+        
+        foreach (var controlItem in _controlItems)
+        {
+            _icon.Menu.Items.Add(controlItem);
         }
     }
     

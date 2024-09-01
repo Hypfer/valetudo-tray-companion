@@ -1,4 +1,4 @@
-﻿namespace valetudo_tray_companion.AutostartProvider;
+namespace ValetudoTrayCompanion.AutostartProvider;
 
 public interface IAutostartProvider
 {

@@ -1,7 +1,8 @@
-﻿using System.Runtime.Versioning;
+using System;
+using System.Runtime.Versioning;
 using Microsoft.Win32;
 
-namespace valetudo_tray_companion.AutostartProvider;
+namespace ValetudoTrayCompanion.AutostartProvider;
 
 [SupportedOSPlatform("windows")]
 public sealed class WindowsAutostartProvider : IAutostartProvider

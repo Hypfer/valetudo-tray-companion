@@ -12,15 +12,15 @@
               {
                 'name': 'Use .NET Core',
                 'uses': 'actions/setup-dotnet@v1',
-                'with': { 'dotnet-version': '7.0' },
+                'with': { 'dotnet-version': '8.0' },
               },
               { 
                 'name': 'Publish Win',
-                'run': 'dotnet publish -r win-x64 -p:PublishSingleFile=true -p:PublishTrimmed=true -p:IncludeNativeLibrariesForSelfExtract=true --self-contained true --configuration Release -p:DebugType=embedded -o build_win/'
+                'run': 'dotnet publish -r win-x64 -o build_win/'
               },
               {
                 'name': 'Publish Lin amd64',
-                'run': 'dotnet publish -r linux-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --self-contained true --configuration Release -p:DebugType=embedded -o build_lin_amd64/'
+                'run': 'dotnet publish -r linux-x64 -o build_lin_amd64/'
               },
               
 

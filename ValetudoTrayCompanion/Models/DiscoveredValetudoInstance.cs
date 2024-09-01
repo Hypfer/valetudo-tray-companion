@@ -1,4 +1,6 @@
-﻿namespace valetudo_tray_companion;
+using System;
+
+namespace ValetudoTrayCompanion.Models;
 
 public sealed class DiscoveredValetudoInstance
 {

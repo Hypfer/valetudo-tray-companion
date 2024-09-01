@@ -1,7 +1,8 @@
-﻿using System.Runtime.InteropServices;
-using valetudo_tray_companion.AutostartProvider;
+using System;
+using System.Runtime.InteropServices;
+using ValetudoTrayCompanion.AutostartProvider;
 
-namespace valetudo_tray_companion;
+namespace ValetudoTrayCompanion;
 
 public sealed class AutostartManager
 {

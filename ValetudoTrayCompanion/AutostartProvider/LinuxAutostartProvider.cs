@@ -1,7 +1,9 @@
-﻿using System.Runtime.Versioning;
+using System;
+using System.IO;
+using System.Runtime.Versioning;
 using System.Text;
 
-namespace valetudo_tray_companion.AutostartProvider;
+namespace ValetudoTrayCompanion.AutostartProvider;
 
 [SupportedOSPlatform("linux")]
 public sealed class LinuxAutostartProvider : IAutostartProvider

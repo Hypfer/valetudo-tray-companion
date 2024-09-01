@@ -1,4 +1,4 @@
-namespace valetudo_tray_companion;
+namespace ValetudoTrayCompanion;
 
 public static class Constants
 {
